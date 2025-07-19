@@ -17,7 +17,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // authorization
-require('./todo-app/config/passport')(app);
+require('./config/passport')(app);
 
 // router
 app.use('/', require('./routes'));
