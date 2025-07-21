@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>レシピ登録</title>
+  <script>
+    function addStep() {
+      const stepsContainer = document.getElementById('steps-container');
+      const stepIndex = stepsContainer.children.length;
+
+      const stepDiv = document.createElement('div');
+      stepDiv.innerHTML = `
+        <h4>手順 ${stepIndex + 1}</h4>
+        <label>説明：</label>
+        <input type="text" name="steps[${stepIndex}][description]" required>
+        <label>画像：</label>
+        <input type="file" name="stepsImages" accept="image/*">
+        <br><br>
+      `;
+      stepsContainer.appendChild(stepDiv);
+    }
+  </script>
+</head>
+<body>
+  <h1>新規レシピ登録</h1>
+
+  <form action="/recipes" method="post" enctype="multipart/form-data">
+    <div>
+      <label>タイトル：</label>
+      <input type="text" name="title" required>
+    </div>
+
+    <div>
+      <label>カテゴリ：</label>
+      <select name="category">
+        <% categories.forEach(function(cat) { %>
+          <option value="<%= cat.id %>"><%= cat.name %></option>
+        <% }); %>
+      </select>
+    </div>
+
+    <div>
+      <label>全体画像：</label>
+      <input type="file" name="image" accept="image/*">
+    </div>
+
+    <h3>手順</h3>
+    <div id="steps-container">
+      <!-- JavaScriptで追加される -->
+    </div>
+    <button type="button" onclick="addStep()">手順を追加</button>
+
+    <br><br>
+    <button type="submit">登録</button>
+  </form>
+
+  <a href="/">戻る</a>
+</body>
+</html>

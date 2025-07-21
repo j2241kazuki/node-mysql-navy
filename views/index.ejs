@@ -2,47 +2,65 @@
 <html>
 <head>
   <title><%= title %></title>
-  <link rel='stylesheet' href='/stylesheets/style.css'/>
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"
-        integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
 </head>
 <body>
-<%- include('./error_messages'); %>
-<% if(isAuth) { %>
-  <div class="container">
-    <div class="container">
-  <div class="container">
-  <div class="row">
-    <div class="col-md-6">
-      <form action="/" method="post">
-        <label>タスクの追加</label>
-        <input required type="text" name="add" placeholder="何をする?"/>
-        <input type="submit" value="追加"/>
-      </form>
-    </div>
-    <div class="col-md-6">
-      <ul>
-        <% for(let todo of todos){ %>
-          <li><span><%= todo.content %></span></li>
-        <% } %>
-      </ul>
-    </div>
-  </div>
-</div>
-</div>
-  </div>
+  <% if (user) { %>
+    <p>こんにちは、<%= user.username %>さん！</p>
+    <form action="/logout" method="post" style="display:inline;">
+      <button type="submit">ログアウト</button>
+    </form>
+  <% } else { %>
+    <p><a href="/signin">サインイン</a>してください。</p>
+  <% } %>
+
+  <h1>レシピ一覧</h1>
+<% if (recipes && recipes.length > 0) { %>
+  <ul>
+    <% recipes.forEach(recipe => { %>
+      <li>
+        <h3><%= recipe.title %></h3>
+        <p><%= recipe.description %></p>
+
+        <!-- 削除フォーム -->
+        <form action="/delete/<%= recipe.id %>" method="POST" onsubmit="return confirm('本当に削除しますか？');">
+          <button type="submit">削除</button>
+        </form>
+      </li>
+    <% }); %>
+  </ul>
 <% } else { %>
-  <h1>Welcome to the TodoApp</h1>
-  <a class="btn btn-primary" href="/signup" role="button">Sign up now!</a>
+  <p>レシピがありません。</p>
 <% } %>
-<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
-        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
-        crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js"
-        integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut"
-        crossorigin="anonymous"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js"
-        integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k"
-        crossorigin="anonymous"></script>
+  <h2>検索・絞り込み</h2>
+  <form method="get" action="/recipes">
+    <input type="text" name="q" placeholder="キーワード検索" value="<%= typeof q !== 'undefined' ? q : '' %>">
+    <select name="category">
+      <option value="">カテゴリ選択</option>
+      <% categories.forEach(function(cat) { %>
+        <option value="<%= cat.id %>" <%= selectedCategory == cat.id ? 'selected' : '' %>><%= cat.name %></option>
+      <% }); %>
+    </select>
+    <button type="submit">検索</button>
+  </form>
+
+  <ul>
+    <% recipes.forEach(function(recipe) { %>
+      <li>
+        <strong><%= recipe.title %></strong>
+        （カテゴリ: <%= recipe.category %>）
+        <% if (recipe.image) { %>
+          <br><img src="/uploads/<%= recipe.image %>" width="100">
+        <% } %>
+        
+        <% if (user && user.id === recipe.user_id) { %>
+          <form action="/recipes/<%= recipe.id %>?_method=DELETE" method="post" style="display:inline;">
+            <button type="submit" onclick="return confirm('本当に削除しますか？');">削除</button>
+          </form>
+        <% } %>
+      </li>
+    <% }); %>
+  </ul>
+
+  <a href="/recipes/new">新規登録</a>
 </body>
 </html>

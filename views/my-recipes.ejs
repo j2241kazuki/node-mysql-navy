@@ -1,0 +1,12 @@
+<h1>あなたのレシピ</h1>
+<ul>
+  <% recipes.forEach(recipe => { %>
+    <li>
+      <strong><%= recipe.title %></strong><br>
+      <%= recipe.description %>
+      <form action="/delete-recipe/<%= recipe.id %>" method="POST" onsubmit="return confirm('本当に削除しますか？')">
+        <button type="submit">削除</button>
+      </form>
+    </li>
+  <% }) %>
+</ul>

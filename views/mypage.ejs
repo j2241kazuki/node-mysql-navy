@@ -1,0 +1,46 @@
+<% recipes.forEach(recipe => { %>
+  <div class="recipe">
+    <h3><%= recipe.title %></h3>
+    <p><%= recipe.description %></p>
+
+    <form action="/recipe/delete/<%= recipe.id %>" method="POST" onsubmit="return confirm('本当に削除しますか？');">
+      <button type="submit">削除</button>
+    </form>
+  </div>
+<% }) %>
+<!DOCTYPE html>
+<html>
+<head>  
+  <title>マイページ</title>
+</head>
+<body>
+  <h1>マイページ</h1>
+  <% if (user) { %>
+    <p>こんにちは、<%= user.name %>さん！</p>
+    <form action="/logout" method="post" style="display:inline;">
+      <button type="submit">ログアウト</button>
+    </form>
+  <% } else { %>
+    <p><a href="/signin">サインイン</a>してください。</p>
+  <% } %>
+  <h2>あなたのレシピ</h2>
+  <ul>
+    <% recipes.forEach(recipe => { %>
+      <li>
+        <strong><%= recipe.title %></strong><br>
+        <%= recipe.description %>
+        <form action="/delete-recipe/<%= recipe.id %>" method="POST" onsubmit="return confirm('本当に削除しますか？')">
+          <button type="submit">削除</button>
+        </form>
+      </li>
+    <% }) %>
+  </ul>
+  <a href="/recipes/new">新規レシピ登録</a>
+  <a href="/">ホームへ戻る</a>
+</body>
+</html>
+<% if (recipes.length === 0) { %>
+  <p>まだレシピが登録されていません。</p>
+<% } %>
+</body>
+</html>

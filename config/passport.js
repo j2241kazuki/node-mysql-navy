@@ -1,57 +1,41 @@
-const passport = require("passport");
-const LocalStrategy = require("passport-local");
+const LocalStrategy = require("passport-local").Strategy;
 const knex = require("../db/knex");
 const bcrypt = require("bcrypt");
-const User = require("../models/user");
-const cookieSession = require("cookie-session");
-const secret = "secretCuisine123";
 
-module.exports = function (app) {
-  passport.serializeUser(function(user, done) {
-  console.log("serializeUser");
-  done(null, user.id);
-});
-
-  passport.deserializeUser(async function (id, done) { 
-    console.log("deserializeUser"); 
-    try { const user = await User.findById(id); 
-      done(null, user); } 
-  catch (error) { done(error, null); } }); 
-
+module.exports = function(passport) {
   passport.use(new LocalStrategy({
-      usernameField: "username",
-      passwordField: "password",
-    }, function (username, password, done) {
-      knex("users")
-        .where({
-          name: username,
-        })
-        .select("*")
-        .then(async function (results) {
-          if (results.length === 0) {
-            return done(null, false, {message: "Invalid User"});
-          } else if (await bcrypt.compare(password, results[0].password)) {
-            return done(null, results[0]);
-          } else {
-            return done(null, false, {message: "Invalid User"});
-          }
-        })
-        .catch(function (err) {
-          console.error(err);
-          return done(null, false, {message: err.toString()})
-        });
+    usernameField: "username",
+    passwordField: "password"
+  }, async (username, password, done) => {
+    try {
+      const users = await knex("users").where({ username });
+      if (users.length === 0) {
+        return done(null, false, { message: "Incorrect username." });
+      }
+
+      const user = users[0];
+
+      const match = await bcrypt.compare(password, user.password);
+      if (!match) {
+        return done(null, false, { message: "Incorrect password." });
+      }
+
+      return done(null, user);
+    } catch (err) {
+      return done(err);
     }
-  ));
+  }));
 
-  app.use(
-    cookieSession({
-      name: "session",
-      keys: [secret],
+  passport.serializeUser((user, done) => {
+    done(null, user.id);
+  });
 
-      // Cookie Options
-      maxAge: 24 * 60 * 60 * 1000, // 24 hours
-    })
-  );
-
-  app.use(passport.session());
+  passport.deserializeUser(async (id, done) => {
+    try {
+      const users = await knex("users").where({ id });
+      done(null, users[0]);
+    } catch (err) {
+      done(err);
+    }
+  });
 };
